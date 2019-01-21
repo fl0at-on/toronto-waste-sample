@@ -1,0 +1,82 @@
+:root {
+  --blue-0: #1d5795;
+  --green-0: #23985c;
+  --grey-0: #aaaaaa;
+}
+
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.container {
+  font-family: sans-serif;
+  display: grid;
+  grid-template-columns: 0.5fr 3fr 4fr 0.5fr;
+  width: 80%;
+  margin: auto;
+}
+
+.grid-header {
+  grid-column: 1 / span 4;
+  text-align: center;
+  height: 100px;
+  color: white;
+  background: linear-gradient(
+    90deg,
+    rgba(29, 87, 149, 1) 0%,
+    rgba(35, 152, 92, 1) 90%,
+    rgba(35, 152, 92, 1) 100%
+  );
+}
+
+.grid-search {
+  grid-column: 2 / span 3;
+}
+
+input[type="checkbox"]:checked ~ label i.grid-star {
+  color: var(--green-0);
+}
+
+input[type="text"] {
+  grid-column: 2 / span 3;
+  text-align: center;
+  width: 80%;
+  align-content: center;
+  border: 1px dashed gray;
+  height: 50px;
+}
+
+button {
+  color: white;
+  padding: 10px;
+  font-size: 24px;
+  background-color: var(--green-0);
+}
+
+.grid-result {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-column: 1 / span 4;
+  grid-gap: 10px;
+  list-style-type: none;
+  padding: 0px;
+}
+
+ul .grid-result-1,
+li .grid-star {
+  list-style-type: none;
+  padding: 0px;
+}
+
+.grid-star {
+  color: var(--grey-0);
+}
+
+li.grid-result-2 {
+  list-style-type: none;
+}
+
+.grid-fav {
+  grid-column: 1 / span 2;
+}
