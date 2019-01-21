@@ -3,8 +3,10 @@ import Item from "./Item.js";
 
 export class Results extends React.Component {
   render() {
-    //console.log(this.props);
-    let { result } = this.props;
+    console.log(this.props);
+
+    let { result, favoriteList } = this.props;
+    console.log(favoriteList);
 
     return (
       <React.Fragment>
@@ -14,6 +16,7 @@ export class Results extends React.Component {
               key={item.id}
               item={item}
               onClick={e => this.props.onClick(e)}
+              toggled={favoriteList.some(obj => obj.id === item.id) || false}
             />
           );
         })}

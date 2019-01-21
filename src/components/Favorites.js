@@ -17,6 +17,7 @@ export class Favorites extends React.Component {
               key={item.id}
               item={item}
               onClick={e => this.props.onClick(e)}
+              toggled={true}
             />
           );
         })}

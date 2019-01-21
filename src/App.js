@@ -160,6 +160,7 @@ class CallApp extends React.Component {
           <Results
             result={this.state.filteredResponse}
             onClick={e => this.handleToggle(e)}
+            favoriteList={this.state.favorites}
           />
         )}
 

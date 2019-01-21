@@ -3,14 +3,20 @@ import ReactHtmlParser from "react-html-parser";
 
 const Item = props => {
   //console.log(props);
-  let { item } = props;
-
+  let { item, toggled } = props;
+  console.log(toggled);
   return (
     <React.Fragment>
       <ul className="grid-result">
         <li className="grid-fav-1">
           <span>
-            <input id={item.id} name={item.id} type="checkbox" hidden />
+            <input
+              id={item.id}
+              name={item.id}
+              type="checkbox"
+              defaultChecked={toggled}
+              hidden
+            />
             <label
               id={item.id}
               name={item.id}
