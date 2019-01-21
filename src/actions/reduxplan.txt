@@ -1,0 +1,27 @@
+//call API Results at the outset?
+//the search submit function filters the result to redner
+//however, API isn't called at each search
+//benefit: UUID remains constant over each search?
+// don't use this idea, it's non-performant (sic) compared to below.
+
+
+
+
+
+//why do we need static UUIDs? for favorites.
+//if we search/re-search, the favorite list should remain as is.
+
+//plan: compare the 'favorite list' against the new 'search results' list
+//compare by contents (body,title, category, keywords,id[if exists])
+//  search by id first for quickness
+// if matching, assign the new id to the result
+
+//Expected actions to address:
+//~Search~
+//     update search value
+//     return results
+//          filter results
+
+// ~Favorites~
+//     add favorite
+//     remove favorite

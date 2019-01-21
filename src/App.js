@@ -1,10 +1,11 @@
 import React from "react";
-import ReactHtmlParser, {
-  processNodes,
-  convertNodeToElement,
-  htmlparser2
-} from "react-html-parser";
-//import "font-awesome/css/font-awesome.min.css";
+import _ from "lodash";
+//components
+import { Results } from "../src/components/Results.js";
+import Search from "../src/components/Search.js";
+import { Favorites } from "../src/components/Favorites.js";
+
+const uuidv4 = require("uuid/v4");
 
 //https://cdn.shopify.com/static/web-eng-challenge-summer-2019/index.md
 //https://cdn.shopify.com/static/web-eng-challenge-summer-2019/design.png
@@ -16,48 +17,72 @@ class CallApp extends React.Component {
     super(props);
     this.state = {
       searchValue: "",
-      response: "",
-      filteredResponse: "",
-      favorites: ""
+      response: [],
+      filteredResponse: [],
+      favorites: []
     };
   }
 
   handleChange = e => {
-    const searchText = this.refs.searchtext.value;
+    //console.log(e.target.value);
+    const searchText = e.target.value; //this.refs.searchtext.value;
     if (!searchText) {
       this.setState({
         searchValue: "",
-        response: "",
-        filteredResponse: "",
-        favorites: ""
+        response: [],
+        filteredResponse: []
+        //favorites: []
       });
+    } else {
+      this.setState({ searchValue: e.target.value });
     }
   };
 
-  convertRawHTML() {
-    var rawMarkup = this.props.filteredResponse;
-    return { __html: rawMarkup };
-  }
-
   handleToggle = e => {
-    const idx = e.target.parentNode.id;
-    const selected = this.state.filteredResponse[idx];
+    const choiceID = e.target.parentNode.id;
+    //console.log(choiceID);
 
-    const newFavorites = [...this.state.favorites, selected];
-    //console.log(idx);
-    //console.log(selected);
+    const selectedObject = this.state.filteredResponse.find(obj => {
+      return obj.id === choiceID;
+    });
 
-    //add/remove from favorited?
-    //loop through favorited array, find the id?
+    let newFavorites = [];
 
-    this.setState({ favorites: newFavorites });
+    if (
+      !this.state.favorites.find(obj => {
+        return obj.id === choiceID;
+      })
+    ) {
+      //add it
+      //console.log("adding");
+      newFavorites = [...this.state.favorites, selectedObject];
+      //console.log(newFavorites);
+    } else {
+      //remove it
+      //console.log("removing");
+      newFavorites = this.state.favorites.filter(obj => {
+        return obj.id !== choiceID;
+      });
+    }
+
+    //set state
+    this.setState(
+      { favorites: newFavorites } //, () =>
+      // console.log(this.state.favorites)
+    );
   };
+
   callAPI = async () => {
     const data = await fetch(APIURL);
 
     const body = data.json();
 
     return body;
+  };
+
+  convertRawHTML = () => {
+    var rawMarkup = this.props.result;
+    return { __html: rawMarkup };
   };
   componentDidMount() {
     this.callAPI();
@@ -66,97 +91,84 @@ class CallApp extends React.Component {
   searchDetails = e => {
     e.preventDefault();
     //keyword user is searching for
-    const searchValue = this.refs.searchtext.value
+    const searchValue = this.state.searchValue //this.refs.searchtext.value
       .replace(/\s+/g, "")
       .toLowerCase();
 
     //query the API
     this.callAPI().then(arr => {
+      //assign UUIDs to those that do not have id fields
+      const improvedArr = arr.map(obj => {
+        if (!obj.id) {
+          return { id: uuidv4(), ...obj };
+        } else {
+          return obj;
+        }
+      });
+
       //filter the results to align w/ ref text
-      const filtered = arr.filter(item =>
+      //removing spaces w/ regex
+      const filtered = improvedArr.filter(item =>
         item.keywords
           .toLowerCase()
           .replace(/\s+/g, "")
           .includes(searchValue)
       );
 
-      //save results
+      //compare current favorite list to the new information
+      //match against obj properties to see if they are the same
+      //if so, add the same id to the new information
+
+      let updatedFavoriteArray = this.state.favorites || [];
+
+      if (updatedFavoriteArray.length !== 0) {
+        updatedFavoriteArray = improvedArr.filter(obj => {
+          return this.state.favorites.some(fav => {
+            return _.isEqual(_.omit(fav, ["id"]), _.omit(obj, ["id"]));
+          });
+        });
+      }
+
+      //set state
       this.setState(
-        { searchValue: searchValue, response: arr, filteredResponse: filtered } //,
+        {
+          searchValue: searchValue,
+          response: improvedArr,
+          filteredResponse: filtered,
+          favorites: updatedFavoriteArray
+        } //,
         //() => console.log(this.state)
       );
     });
   };
 
   render() {
+    // console.log(this.state.favorites);
+    // console.log(this.state.favorites.length);
     return (
       <div className="container">
         <span dangerouslySetInnerHTML={this.convertRawHTML()} />
+        <header>
+          <h1 className="grid-header">Toronto Waste Lookup</h1>
+        </header>
+        <Search
+          onChange={e => this.handleChange(e)}
+          onSubmit={e => this.searchDetails(e)}
+        />
 
-        <h1 className="grid-header">Toronto Waste Lookup</h1>
-        <form className="grid-search" onSubmit={e => this.searchDetails(e)}>
-          <input
-            type="text"
-            ref="searchtext"
-            onChange={e => this.handleChange(e)}
+        {this.state.response && (
+          <Results
+            result={this.state.filteredResponse}
+            onClick={e => this.handleToggle(e)}
           />
-          <button type="submit">
-            <i className="search-btn fa fas fa-search" />
-          </button>
-        </form>
-        {this.state.filteredResponse &&
-          this.state.filteredResponse.map((item, i) => {
-            return (
-              <ul className="grid-result" key={i}>
-                <li className="grid-fav-1">
-                  <span>
-                    <input id={i} name={i} type="checkbox" hidden />
-                    <label
-                      id={i}
-                      name={i}
-                      htmlFor={i}
-                      onClick={e => this.handleToggle(e)}
-                    >
-                      <i ref={i} className="grid-star fa fa-star " />
-                    </label>
-                  </span>
-                  {item.title}
-                </li>
-                <li className="grid-fav-2">
-                  {ReactHtmlParser(ReactHtmlParser(item.body))}
-                </li>
-              </ul>
-            );
-          })}
+        )}
 
-        {this.state.favorites && (
-          <ul className="grid-fav" style={{ lineStyleType: "none" }}>
-            <li>Favorites</li>
-            {this.state.favorites &&
-              this.state.favorites.map((item, i) => {
-                return (
-                  <ul className="grid-result" key={i}>
-                    <li className="grid-fav-1">
-                      <span>
-                        <input id={i} name={i} type="checkbox" hidden />
-                        <label
-                          id={i}
-                          name={i}
-                          htmlFor={i}
-                          onClick={e => this.handleToggle(e)}
-                        >
-                          <i ref={i} className="grid-star fa fa-star " />
-                        </label>
-                      </span>
-                      {item.title}
-                    </li>
-                    <li className="grid-fav-2">
-                      {ReactHtmlParser(ReactHtmlParser(item.body))}
-                    </li>
-                  </ul>
-                );
-              })}
-          </ul>
+        {!this.state.favorites.length < 1 && (
+          <Favorites
+            //{...this.props}
+            favorites={this.state.favorites}
+            onClick={e => this.handleToggle(e)}
+          />
         )}
       </div>
     );
