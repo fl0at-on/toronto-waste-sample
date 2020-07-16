@@ -6,7 +6,7 @@
   "main": "src/index.js",
   "dependencies": {
     "font-awesome": "4.7.0",
-    "lodash": "4.17.11",
+    "lodash": "4.17.19",
     "react": "16.5.2",
     "react-dom": "16.5.2",
     "react-html-parser": "2.0.2",
